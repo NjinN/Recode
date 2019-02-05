@@ -207,19 +207,19 @@ forever [
 
 			_backend/file-path: rejoin reduce [%www first parse _backend/requests/line/2 "?"]
 			
+			change-dir rejoin [_backend/backend-path %www/]
 			if error? e2: try [
 				either find _backend/file-map _backend/file-path [
-					change-dir rejoin [_backend/backend-path %www/]
-					;_backend/result-str: rejoin do select _backend/file-map _backend/file-path        ;使用预加载的页面文件
-					change-dir _backend/backend-path
-					_backend/result-str: rejoin do _backend/relet read/string _backend/file-path		;强制读取硬盘中页面文件
+					;_backend/result-str: rejoin do select _backend/file-map _backend/file-path           ;强制读取硬盘文件请切换此处注释
+					_backend/result-str: rejoin do _backend/relet read/string rejoin [%../ _backend/file-path]
 				] [
-					_backend/result-str: rejoin do _backend/relet read/string _backend/file-path
+					_backend/result-str: rejoin do _backend/relet read/string [%../ _backend/file-path]
 				]	
 			] [
 				probe disarm e2
 				_backend/result-str: copy ""
-			] 
+			]
+			change-dir _backend/backend-path 
 			
 			either not empty? _set-cookies [
 				foreach cookie _set-cookies [
