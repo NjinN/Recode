@@ -224,7 +224,7 @@ _serv: context [
 				cookies-str: copy "^M^/" 
 			]
 			
-			result-deliver: rejoin ["HTTP/1.1 200 OK^M^/Content-Type:text/html; charset=gb2312^M^/" "Content-Length:" length? deliver "^M^/" cookies-str "^M^/" deliver]
+			result-deliver: rejoin ["HTTP/1.1 200 OK^M^/Content-Type:text/html; charset=gb2312^M^/" "Content-Length:" ((length? deliver) + 1) "^M^/" cookies-str "^M^/" deliver]
 			if (type? client) <> port! [return false]
 			
 			either this/state/outBuffer [
