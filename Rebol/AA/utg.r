@@ -6,6 +6,10 @@ parse temp [any [
 "%3F" (replace str "%3F" "?" ) |
 "%5B" (replace str "%5B" "[" ) |
 "%5D" (replace str "%5D" "]" ) |
+"%0A" (replace str "%0A" "^/" ) |
+"%3C" (replace str "%3C" "<" ) |
+"%3E" (replace str "%3E" ">" ) |
+"%2F" (replace str "%2F" "/" ) |
 "%E4%B8%80" (replace str "%E4%B8%80" "Ò»" ) |
 "%E4%B8%81" (replace str "%E4%B8%81" "¶¡" ) |
 "%E4%B8%83" (replace str "%E4%B8%83" "Æß" ) |
