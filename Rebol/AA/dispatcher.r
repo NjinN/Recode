@@ -39,7 +39,7 @@ _serv: context [
 				"^M^/^M" copy body-str to end (if body-str [temp/body: copy body-str])
 				|
 				"^M" copy header-str to "^M" (
-					parse header-str [ copy key to ":" thru " " copy value to end (append temp/headers reduce [to-word key value])]
+					parse header-str [ copy key to ":" thru " " copy value to end (append temp/headers reduce [to-word (replace key "^/" "") value])]
 				)
 				| skip
 			]
@@ -68,10 +68,27 @@ _serv: context [
 					return false
 				]
 				
-				requests: unpack buf
+				either this/user-data [
+					append this/user-data/body buf
+					either attempt [(to-integer this/user-data/headers/Content-Length) > length? this/user-data/body] [
+						return false
+					] [
+						requests: copy this/user-data
+						this/user-data: none
+					]
+				] [
+					requests: unpack buf
+					if attempt [(to-integer requests/headers/Content-Length) > length? requests/body] [
+						this/user-data: copy requests
+						return false
+					]
+				]
+				
 				;probe requests
+				
 				;是否包含请求资源路径
 				if not (pick requests/line 2) [
+					;probe requests/line
 					throw "BadRequest"
 				]
 				
@@ -121,8 +138,8 @@ _serv: context [
 						append response "200 OK^M^/"
 						;获取响应消息正文
 						either (find file-map file-path) [
-							file-bin: select file-map file-path        ;强制读取硬盘文件请切换此处注释
-							;file-bin: to-string read/binary file-path
+							;file-bin: select file-map file-path        ;强制读取硬盘文件请切换此处注释
+							file-bin: to-string read/binary file-path
 						] [
 							file-bin: to-string read/binary file-path
 						]
@@ -210,21 +227,28 @@ _serv: context [
 				clear buf
 				return false
 			]
-			
+
 			cookies-str: make string! 1024
-			deliver: make string! 50000
+			deliver: make string! 2010000
 			parse buf [copy remote-ip to "^M^/" thru "^M^/" copy cookies-str to "^M^/^M^/" thru "^M^/^M^/" copy deliver to end]
 			clear buf
-		
+			
+			while [ 
+				all [
+					(length? deliver) > 0
+					(last deliver) = #"^/"
+				]
+			] [take/last deliver]
+			
 			client: select request-map remote-ip
 			
 			either cookies-str [
 				append cookies-str "^M^/" 
 			] [
-				cookies-str: copy "^M^/" 
+				cookies-str: copy "" 
 			]
 			
-			result-deliver: rejoin ["HTTP/1.1 200 OK^M^/Content-Type:text/html; charset=gb2312^M^/" "Content-Length:" ((length? deliver) + 1) "^M^/" cookies-str "^M^/" deliver]
+			result-deliver: rejoin ["HTTP/1.1 200 OK^M^/Content-Type:text/html; charset=gb2312^M^/" "Content-Length:" length? deliver "^M^/" cookies-str "^M^/" deliver]
 			if (type? client) <> port! [return false]
 			
 			either this/state/outBuffer [
@@ -259,7 +283,7 @@ _serv: context [
 					no-wait: true
 				]
 				client/awake: do bind load mold :client-awake _serv
-				;client/buffer-size: 100000
+				client/buffer-size: 2010000
 				append system/ports/wait-list client
 				
 				server-awake-count: server-awake-count + 1

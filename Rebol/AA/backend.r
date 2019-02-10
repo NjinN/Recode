@@ -45,7 +45,7 @@ _backend: context [
 					copy b-str to "&" thru "&"
 					| copy b-str to end
 				] 
-				(append blk reduce [to-word h-str b-str])
+				(append blk reduce [to-word (system/words/url-to-gbk h-str) system/words/url-to-gbk b-str])
 				| skip
 			]
 		]
@@ -61,7 +61,7 @@ _backend: context [
 					copy b-str to "&" thru "&"
 					| copy b-str to end
 				] 
-				(append blk reduce [h-str b-str])
+				(append blk reduce [system/words/url-to-gbk h-str system/words/url-to-gbk b-str])
 				| skip
 			]
 		]
@@ -180,11 +180,11 @@ forever [
 			;probe _backend/requests
 			_backend/get-request?: true
 		
-			_get: copy _backend/get-get url-to-gbk to-string _backend/requests/line/2
+			_get: copy _backend/get-get to-string _backend/requests/line/2
 			
 			_headers: copy _backend/requests/headers
 			
-			_post: copy _backend/get-post url-to-gbk _backend/requests/body 
+			_post: copy _backend/get-post _backend/requests/body 
 			
 			_content: copy _backend/requests/body
 			
@@ -217,7 +217,7 @@ forever [
 				]	
 			] [
 				probe disarm e2
-				_backend/result-str: copy ""
+				_backend/result-str: mold disarm e2
 			]
 			change-dir _backend/backend-path 
 			
