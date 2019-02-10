@@ -14,7 +14,8 @@ _backend: context [
 					thru {?>} copy e-str to end (if e-str [ repend code-block [ " keep " mold e-str " "]])
 				]
 			]
-			
+			|
+			copy e-str to end (if e-str [ repend code-block [ " keep " mold e-str " "]])
 		]
 		relet-str: rejoin code-block
 		insert relet-str "collect [ "
