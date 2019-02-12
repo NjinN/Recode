@@ -11,7 +11,7 @@ parse temp [any [
 "%23" (replace str "%23" {#} ) |
 "%24" (replace str "%24" {$} ) |
 "%25" (replace str "%25" {%} ) |
-
+"%26" (replace str "%26" {&} ) |
 "%27" (replace str "%27" {'} ) |
 "%28" (replace str "%28" {(} ) |
 "%29" (replace str "%29" {)} ) |
