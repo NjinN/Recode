@@ -120,7 +120,6 @@ _serv: context [
 					replace/all requests "^/" ""
 					backend: pick backends backend-index
 					
-					write %rq.txt requests
 					;backend/async-modes: 'write
 					write-io backend requests length? requests
 					;backend/async-modes: 'read
