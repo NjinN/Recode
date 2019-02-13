@@ -5,13 +5,14 @@ temp: copy str
 parse temp [any [
 
 "%0A" (replace str "%0A" "^/" ) |
+"%09" (replace str "%09" "^-" ) |
 
 "%21" (replace str "%21" {!} ) |
 "%22" (replace str "%22" {"} ) |
 "%23" (replace str "%23" {#} ) |
 "%24" (replace str "%24" {$} ) |
 "%25" (replace str "%25" {%} ) |
-"%26" (replace str "%26" {&} ) |
+"%26" (replace str "%26" {+} ) |
 "%27" (replace str "%27" {'} ) |
 "%28" (replace str "%28" {(} ) |
 "%29" (replace str "%29" {)} ) |
@@ -47,8 +48,8 @@ parse temp [any [
 "%E2%80%99" (replace str "%E2%80%99" "¡¯" )  |
 "%EF%BC%88" (replace str "%EF%BC%88" "£¨" )  |
 "%EF%BC%89" (replace str "%EF%BC%89" "£©" )  |
-"%EF%BC%8C" (replace str "%EF%BC%88" "£¬" )  |
-"%E3%80%32" (replace str "%E3%80%32" "¡£" )  |
+"%EF%BC%8C" (replace str "%EF%BC%8C" "£¬" )  |
+"%E3%80%82" (replace str "%E3%80%82" "¡£" )  |
 "%E3%80%81" (replace str "%E3%80%81" "¡¢" )  |
 "%EF%BC%9A" (replace str "%EF%BC%9A" "£º" )  |
 "%EF%BC%9B" (replace str "%EF%BC%9B" "£»" )  |

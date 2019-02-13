@@ -118,6 +118,8 @@ _backend: context [
 	e-obj: none
 	file-map: make map! []
 	load-file %www/
+	
+	numset: charset "0123456789"
 
 ]
 
@@ -174,8 +176,18 @@ forever [
 			;print rejoin ["开始读取前台消息"  now/time/precise]
 			
 			buf: make string! 2010000
-			read-io _backend/dispatcher buf 2010000
-			 
+			probe read-io _backend/dispatcher buf 2010000
+			
+			either parse buf [thru {remote-ip "} 1 3 _backend/numset "." 1 3 _backend/numset "." 1 3 _backend/numset "." 1 3 _backend/numset ":" some _backend/numset {"]} end] [
+				if _backend/dispatcher/user-data [ insert buf _backend/dispatcher/user-data]
+				_backend/dispatcher/user-data: none
+			] [
+				_backend/dispatcher/user-data: copy buf
+				continue
+			]
+			
+			;probe  buf
+			
 			_backend/requests: do buf
 			clear buf
 			;probe _backend/requests
@@ -186,7 +198,7 @@ forever [
 			_headers: copy _backend/requests/headers
 			
 			_post: copy _backend/get-post _backend/requests/body 
-			
+			;probe _post
 			_content: copy _backend/requests/body
 			
 			if (cookie-str: select _headers 'Cookie) [ _cookies: _backend/get-cookies cookie-str  ]
