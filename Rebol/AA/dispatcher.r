@@ -12,6 +12,10 @@ _serv: context [
 	
 	bad-client-blk: make map! []
 	server-awake-count: 0
+	
+	dispatch-blk: copy [
+		0:00:05 [break]
+	]
 
 	;加载静态文件
 	load-file: func [dir] [
@@ -49,7 +53,7 @@ _serv: context [
 	]
 	
 	remove-socket: func [socket] [
-		remove find system/ports/wait-list socket
+		remove/part find dispatch-blk socket 2
 		remove/part find request-map rejoin [socket/remote-ip ":" socket/remote-port] 2 
 		close socket
 	]
@@ -65,7 +69,7 @@ _serv: context [
 				buf: make string! 2010000
 				if (read-io this buf 2010000) <= 0 [
 					remove-socket this
-					return false
+					return break
 				]
 				
 				either this/user-data [
@@ -84,7 +88,7 @@ _serv: context [
 					]
 				]
 				
-				;probe requests
+				probe requests
 				
 				;是否包含请求资源路径
 				if not (pick requests/line 2) [
@@ -166,6 +170,7 @@ _serv: context [
 					;update this
 					if not find requests/headers "Keep-Alive" [
 						remove-socket this	
+						return break
 					]	
 				]
 				none
@@ -178,18 +183,21 @@ _serv: context [
 					res: copy "HTTP/1.1 404 Not Found^M^Content-Type:text/html; charset=gb2312^M^/Content-Length:18^M^/^M^/<h1>Not Found</h1>"
 					write-io this res length? res
 					remove-socket this
+					return break
 				]
 				if catch-code = "BadRequest" [
 					if (type? this) <> port! [return false]
 					res: copy "HTTP/1.1 400 Bad Request^M^Content-Type:text/html; charset=gb2312^M^/Content-Length:20^M^/^M^/<h1>Bad Request</h1>"
 					write-io this res length? res
 					remove-socket this
+					return break
 				]
 				if catch-code = "Forbidden" [
 					if (type? this) <> port! [return false]
 					res: copy "HTTP/1.1 403 Forbidden^M^Content-Type:text/html; charset=gb2312^M^/Content-Length:18^M^/^M^/<h1>Forbidden</h1>"
 					write-io this res length? res
 					remove-socket this
+					return break
 				]
 				if catch-code = "BadClient" [
 					if (type? this) <> port! [return false]
@@ -201,10 +209,12 @@ _serv: context [
 						repend bad-client-blk [this/remote-ip (now/time/precise + 0:01:00)]
 					]
 					remove-socket this
+					return break
 				]
 				if catch-code = "Closed" [
 					if (type? this) <> port! [return false]
 					remove-socket this
+					return break
 				]
 			]
 			none
@@ -213,6 +223,7 @@ _serv: context [
 				e-obj: disarm e
 				print rejoin reduce [ now " code: " e-obj/code " id: " e-obj/id " near " e-obj/near " where " form e-obj/where]
 				remove-socket this
+				return break
 			]
 		]
 		false
@@ -284,7 +295,8 @@ _serv: context [
 				]
 				client/awake: do bind load mold :client-awake _serv
 				client/buffer-size: 2010000
-				append system/ports/wait-list client
+				;append system/ports/wait-list client
+				append dispatch-blk compose/deep [(client) [client-awake (client)]]
 				
 				server-awake-count: server-awake-count + 1
 				if server-awake-count > 100 [
@@ -296,6 +308,7 @@ _serv: context [
 					]
 					
 				]
+				return break
 				
 			]
 		] [
@@ -334,7 +347,8 @@ _serv: context [
 					;backend/async-modes: ['read 'write]
 					backend/awake: :backend-awake
 					
-					append system/ports/wait-list backend
+					;append system/ports/wait-list backend
+					append dispatch-blk compose/deep [(backend) [backend-awake (backend)]]
 					append backends backend
 					
 				]
@@ -351,9 +365,11 @@ _serv: context [
 		
 		server-port/async-modes: 'connect
 		server-port/awake: :server-awake
-		append system/ports/wait-list server-port
-		
-		wait []
+		;append system/ports/wait-list server-port
+		append dispatch-blk compose/deep [(server-port) [server-awake (server-port)]]
+		probe length? dispatch-blk
+		forever [dispatch dispatch-blk]
+	
 	]
 ]
 
