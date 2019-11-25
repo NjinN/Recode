@@ -1121,4 +1121,8 @@
 	   <td class="separateColor">.7z</td>
        <td>application/x-7z-compressed</td>
       </tr>
+	  <tr>
+	   <td class="separateColor">.zip</td>
+       <td>application/zip</td>
+      </tr>
 </tbody>
